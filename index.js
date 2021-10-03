@@ -1755,7 +1755,7 @@ const reaction = collected.first();
 if (reaction.emoji.name === '✅') {
 	let deleted = new discord.RichEmbed()
 	.setTitle("Successfully Unlinked!")
-	.setDescription(`**${checkiflinked.minecraft}**'s Account has succesfully been forcibly unlinked from <@${checkiflinked.discordID}>\nAll data related has been deleted.`)
+	.setDescription(`**${checkiflinked.minecraft}**'s Account has succesfully been forcibly unlinked from <@${checkiflinked.discordID}>\nThey have been notified.\nAll data related has been deleted.`)
 	.setTimestamp()
 	.setColor("#d60000")
 
@@ -1776,7 +1776,7 @@ if (reaction.emoji.name === '✅') {
 	areyousuresend.clearReactions()
 	let editembed = new discord.RichEmbed()
 	.setTitle("Canceled")
-	.setDescription("The operation was canceled and you will not be unlinked")
+	.setDescription(`The operation was canceled and **${checkiflinked.minecraft}** will not be unlinked`)
 	.setTimestamp()
 	.setColor("#d60000")
 	areyousuresend.edit(editembed)
@@ -1787,7 +1787,7 @@ if (reaction.emoji.name === '✅') {
 	areyousuresend.clearReactions()
 	let editembed = new discord.RichEmbed()
 	.setTitle("Automatically Canceled")
-	.setDescription("The operation was automatically canceled because you did not react within the 30 second time frame.\nYou will not be unlinked")
+	.setDescription(`The operation was automatically canceled because you did not react within the 30 second time frame.\n**${checkiflinked.minecraft}** will not be unlinked`)
 	.setTimestamp()
 	.setColor("#d60000")
 	areyousuresend.edit(editembed)
