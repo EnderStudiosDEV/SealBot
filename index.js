@@ -1769,6 +1769,7 @@ if (reaction.emoji.name === '✅') {
 	db.delete(`linked.users.MC.${checkiflinked.minecraft}`)
 	user.removeRole("877188839255453766")
 	user.removeRole("878124885275201576")
+  user.send(user, userdeleted)
 	areyousuresend.edit(deleted)
 	areyousuresend.clearReactions()
 } else {
