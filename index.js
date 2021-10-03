@@ -1735,7 +1735,7 @@ console.log(args[1]);
 
 		let areyousure = new discord.RichEmbed()
 		.setTitle("Forcibly Unlink")
-		.setDescription(`Are you sure you want to forcibly unlink **${checkiflinked.minecraft}**'s' account?\n⚠️ Forcibly unlinking **${checkiflinked.minecraft}**'s' account will remove their member role and they will loose access to some channels.`)
+		.setDescription(`Are you sure you want to forcibly unlink **${checkiflinked.minecraft}**'s' account?\n⚠️ Forcibly unlinking **${checkiflinked.minecraft}**'s account will remove their member role and they will loose access to some channels.`)
 		.setFooter("Use the reactions below to confirm or cancel.")
 		.setColor("#eeff00")
 		let areyousuresend = await message.channel.send(areyousure)
