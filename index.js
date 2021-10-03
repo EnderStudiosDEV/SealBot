@@ -1729,19 +1729,20 @@ console.log(args[1]);
 		let checkiflinked = db.get(`linked.users.ID.${member}`)
 		let notlinked = new discord.RichEmbed()
 		.setTitle("Not Linked!")
-		.setDescription(`You are not linked to a minecraft account.\nUse \`=verify\` to link one.`)
+		.setDescription(`That user is not linked!\nYou can check currently linked users by using \`=linked\``)
 		.setColor("#eeff00")
 		if (!checkiflinked) return message.channel.send(notlinked);
 
 		let areyousure = new discord.RichEmbed()
-		.setTitle("Unlink")
-		.setDescription(`Are you sure you want to unlink your minecraft account?\nCurrently linked to **${checkiflinked.minecraft}**\n⚠️ Unlinking your account will remove your member role and you will loose access to some channels.`)
+		.setTitle("Forcibly Unlink")
+		.setDescription(`Are you sure you want to forcibly unlink **${checkiflinked.minecraft}**'s' account?\n⚠️ Forcibly unlinking **${checkiflinked.minecraft}**'s' account will remove their member role and they will loose access to some channels.`)
 		.setFooter("Use the reactions below to confirm or cancel.")
 		.setColor("#eeff00")
 		let areyousuresend = await message.channel.send(areyousure)
 
 		areyousuresend.react('✅').then(() => areyousuresend.react('❌'));
-		// let member = message.member
+    let userguild = client.guilds.get(config["discord-guild"])
+    let user = userguild.members.get(member)
 
 const filter = (reaction, user) => {
 return ['✅', '❌'].includes(reaction.emoji.name) && user.id === message.author.id;
@@ -1754,14 +1755,20 @@ const reaction = collected.first();
 if (reaction.emoji.name === '✅') {
 	let deleted = new discord.RichEmbed()
 	.setTitle("Successfully Unlinked!")
-	.setDescription(`Your account was successfully unlinked from **${checkiflinked.minecraft}**\nAll data related has been deleted.`)
+	.setDescription(`**${checkiflinked.minecraft}**'s Account has succesfully been forcibly unlinked from <@${checkiflinked.discordID}>\nAll data related has been deleted.`)
 	.setTimestamp()
 	.setColor("#d60000")
 
-	db.delete(`linked.users.ID.${message.author.id}`)
+  let userdeleted = new discord.RichEmbed()
+	.setTitle("Minecraft Account Unlinked")
+	.setDescription(`Your Minecraft account **${checkiflinked.minecraft}**, has been forcibly unlinked by an Administrator.\nYour member role has been removed.`)
+	.setTimestamp()
+	.setColor("#d60000")
+
+	db.delete(`linked.users.ID.${checkiflinked.discordID}`)
 	db.delete(`linked.users.MC.${checkiflinked.minecraft}`)
-	member.removeRole("877188839255453766")
-	member.removeRole("878124885275201576")
+	user.removeRole("877188839255453766")
+	user.removeRole("878124885275201576")
 	areyousuresend.edit(deleted)
 	areyousuresend.clearReactions()
 } else {
