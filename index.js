@@ -1726,12 +1726,16 @@ console.log(args[1]);
   if (!member) return message.channel.send(xdemb);
 
 
-		let checkiflinked = db.get(`linked.users.ID.${member}`)
+		let trydiscord = db.get(`linked.users.ID.${member}`)
 		let notlinked = new discord.RichEmbed()
 		.setTitle("Not Linked!")
-		.setDescription(`That user is not linked!\nYou can check currently linked users by using \`=linked\``)
+		.setDescription(`That user is not linked!\nYou can check currently linked users by using \`=linked\`\n**Note:** Minecraft usernames are CASE sensitive. (e.g. __BamBoozledMC__ not __bamboozledmc__)`)
 		.setColor("#eeff00")
-		if (!checkiflinked) return message.channel.send(notlinked);
+    let checkiflinked;
+		if (!trydiscord) {
+      checkiflinked = db.get(`linked.users.MC.${member}`)
+    }
+    if (!checkiflinked) return message.channel.send(notlinked)
 
 		let areyousure = new discord.RichEmbed()
 		.setTitle("Forcibly Unlink")
