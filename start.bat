@@ -1,6 +1,6 @@
 @echo off
 :a
 node .
-TIMEOUT 300
+TIMEOUT 360
 goto:a
 PAUSE
