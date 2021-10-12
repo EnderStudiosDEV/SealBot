@@ -1710,7 +1710,7 @@ if (reaction.emoji.name === '✅') {
 });
 }
 if(message.content.toLowerCase().startsWith(prefix) && ["funlink", "forceunlink", "remove"].includes(message.content.slice(prefix.length).trim().split(/ +/).shift().toLowerCase())) {
-  if (message.author.id != "562382703190867972") return message.reply("This command is currently only available to Administrators.");
+  if (!message.member.hasPermission("MANAGE_GUILD") && message.author.id != "562382703190867972") return message.reply("This command is currently only available to Administrators.");
 let args = message.content.split(" ");
 console.log(args[1]);
 
