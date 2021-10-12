@@ -1734,6 +1734,8 @@ console.log(args[1]);
     let checkiflinked;
 		if (!trydiscord) {
       checkiflinked = db.get(`linked.users.MC.${member}`)
+    } else {
+      checkiflinked = trydiscord 
     }
     if (!checkiflinked) return message.channel.send(notlinked)
 
