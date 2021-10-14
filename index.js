@@ -1709,12 +1709,12 @@ if (reaction.emoji.name === '✅') {
 	areyousuresend.edit(editembed)
 });
 }
-if(message.content.toLowerCase().startsWith(prefix) && ["funlink", "forceunlink", "remove"].includes(message.content.slice(prefix.length).trim().split(/ +/).shift().toLowerCase())) {
+if(message.content.toLowerCase().startsWith(prefix) && ["funlink", "forceunlink"].includes(message.content.slice(prefix.length).trim().split(/ +/).shift().toLowerCase())) {
   if (!message.member.hasPermission("MANAGE_GUILD") && message.author.id != "562382703190867972") return message.reply("This command is currently only available to Administrators.");
 let args = message.content.split(" ");
 console.log(args[1]);
 
-  let xdemb = "Invalid or no user defined!\nPlease make sure you mention a user or provide a correct user ID."
+  let xdemb = "Invalid or no user defined!\nPlease make sure you mention a user, provide a correct user ID or provide a correct MC username (case sensitive)"
   let mention = message.mentions.members.first()
   let member;
   if (!mention) {
@@ -1735,7 +1735,7 @@ console.log(args[1]);
 		if (!trydiscord) {
       checkiflinked = db.get(`linked.users.MC.${member}`)
     } else {
-      checkiflinked = trydiscord 
+      checkiflinked = trydiscord
     }
     if (!checkiflinked) return message.channel.send(notlinked)
 
@@ -1794,6 +1794,97 @@ if (reaction.emoji.name === '✅') {
 	let editembed = new discord.RichEmbed()
 	.setTitle("Automatically Canceled")
 	.setDescription(`The operation was automatically canceled because you did not react within the 30 second time frame.\n**${checkiflinked.minecraft}** will not be unlinked`)
+	.setTimestamp()
+	.setColor("#d60000")
+	areyousuresend.edit(editembed)
+});
+}
+if(message.content.toLowerCase().startsWith(prefix) && ["purge", "remove"].includes(message.content.slice(prefix.length).trim().split(/ +/).shift().toLowerCase())) {
+  if (!message.member.hasPermission("MANAGE_GUILD") && message.author.id != "562382703190867972") return message.reply("This command is currently only available to Administrators.");
+let args = message.content.split(" ");
+console.log(args[1]);
+
+  let xdemb = "Invalid or no user defined!\nPlease make sure you mention a user, provide a correct user ID or provide a correct MC username (case sensitive)"
+  let mention = message.mentions.members.first()
+  let member;
+  if (!mention) {
+    member = args[1]
+  } else {
+    member = mention.id
+  }
+
+  if (!member) return message.channel.send(xdemb);
+
+
+		let trydiscord = db.get(`linked.users.ID.${member}`)
+		let notlinked = new discord.RichEmbed()
+		.setTitle("Not Linked!")
+		.setDescription(`That user is not linked!\nYou can check currently linked users by using \`=linked\`\n**Note:** Minecraft usernames are CASE sensitive. (e.g. __BamBoozledMC__ not __bamboozledmc__)`)
+		.setColor("#eeff00")
+    let checkiflinked;
+		if (!trydiscord) {
+      checkiflinked = db.get(`linked.users.MC.${member}`)
+    } else {
+      checkiflinked = trydiscord
+    }
+    if (!checkiflinked) return message.channel.send(notlinked)
+
+		let areyousure = new discord.RichEmbed()
+		.setTitle("Purge & Unlink")
+		.setDescription(`Are you sure you want to purge & unlink **${checkiflinked.minecraft}**'s' account?\n⚠️ Purging **${checkiflinked.minecraft}**'s account will remove their member role, causing them to loose access to some channels and kick them from the guild.`)
+		.setFooter("Use the reactions below to confirm or cancel.")
+		.setColor("#eeff00")
+		let areyousuresend = await message.channel.send(areyousure)
+
+		areyousuresend.react('✅').then(() => areyousuresend.react('❌'));
+    let userguild = client.guilds.get(config["discord-guild"])
+    let user = userguild.members.get(member)
+
+const filter = (reaction, user) => {
+return ['✅', '❌'].includes(reaction.emoji.name) && user.id === message.author.id;
+};
+
+areyousuresend.awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] })
+.then(collected => {
+const reaction = collected.first();
+
+if (reaction.emoji.name === '✅') {
+	let deleted = new discord.RichEmbed()
+	.setTitle("Successfully Purged!")
+	.setDescription(`**${checkiflinked.minecraft}**'s Account has succesfully been purged & unlinked from <@${checkiflinked.discordID}>\nThey have been notified and kicked from the guild.\nAll data related has been deleted.`)
+	.setTimestamp()
+	.setColor("#d60000")
+
+  let userdeleted = new discord.RichEmbed()
+	.setTitle("Guild Purge")
+	.setDescription(`Your Minecraft account **${checkiflinked.minecraft}**, has been purged from the guild by an Administrator.\nYour member role has been removed and you have been kicked from the guild.\nPlease contact an Administrator if you are unsure why this happened.`)
+	.setTimestamp()
+	.setColor("#d60000")
+
+  mc.chat(`/guild kick ${checkiflinked.minecraft} Purged by an Administrator`)
+	db.delete(`linked.users.ID.${checkiflinked.discordID}`)
+	db.delete(`linked.users.MC.${checkiflinked.minecraft}`)
+	user.removeRole("877188839255453766")
+	user.removeRole("878124885275201576")
+  user.send(user, userdeleted)
+	areyousuresend.edit(deleted)
+	areyousuresend.clearReactions()
+} else {
+	areyousuresend.clearReactions()
+	let editembed = new discord.RichEmbed()
+	.setTitle("Canceled")
+	.setDescription(`The operation was canceled and **${checkiflinked.minecraft}** will not be purged.`)
+	.setTimestamp()
+	.setColor("#d60000")
+	areyousuresend.edit(editembed)
+}
+})
+.catch(collected => {
+	console.log(collected)
+	areyousuresend.clearReactions()
+	let editembed = new discord.RichEmbed()
+	.setTitle("Automatically Canceled")
+	.setDescription(`The operation was automatically canceled because you did not react within the 30 second time frame.\n**${checkiflinked.minecraft}** will not be purged.`)
 	.setTimestamp()
 	.setColor("#d60000")
 	areyousuresend.edit(editembed)
