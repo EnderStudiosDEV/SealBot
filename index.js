@@ -1748,7 +1748,7 @@ console.log(args[1]);
 
 		areyousuresend.react('✅').then(() => areyousuresend.react('❌'));
     let userguild = client.guilds.get(config["discord-guild"])
-    let user = userguild.members.get(member)
+    let user = userguild.members.get(checkiflinked.discordID)
 
 const filter = (reaction, user) => {
 return ['✅', '❌'].includes(reaction.emoji.name) && user.id === message.author.id;
@@ -1838,7 +1838,7 @@ console.log(args[1]);
 
 		areyousuresend.react('✅').then(() => areyousuresend.react('❌'));
     let userguild = client.guilds.get(config["discord-guild"])
-    let user = userguild.members.get(member)
+    let user = userguild.members.get(checkiflinked.discordID)
 
 const filter = (reaction, user) => {
 return ['✅', '❌'].includes(reaction.emoji.name) && user.id === message.author.id;
@@ -1861,12 +1861,12 @@ if (reaction.emoji.name === '✅') {
 	.setTimestamp()
 	.setColor("#d60000")
 
-  mc.chat(`/guild kick ${checkiflinked.minecraft} Purged by an Administrator`)
 	db.delete(`linked.users.ID.${checkiflinked.discordID}`)
 	db.delete(`linked.users.MC.${checkiflinked.minecraft}`)
 	user.removeRole("877188839255453766")
 	user.removeRole("878124885275201576")
   user.send(user, userdeleted)
+  mc.chat(`/guild kick ${checkiflinked.minecraft} Purged by an Administrator`)
 	areyousuresend.edit(deleted)
 	areyousuresend.clearReactions()
 } else {
