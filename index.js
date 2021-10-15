@@ -1890,6 +1890,56 @@ if (reaction.emoji.name === '✅') {
 	areyousuresend.edit(editembed)
 });
 }
+if(message.content.toLowerCase().startsWith(prefix) && ["whois", "who", "find"].includes(message.content.slice(prefix.length).trim().split(/ +/).shift().toLowerCase())) {
+  let args = message.content.split(" ");
+  console.log(args[1]);
+
+  let xdemb = "Invalid or no user defined!\nPlease make sure you mention a user, provide a correct user ID or provide a correct MC username (case sensitive)"
+  let mention = message.mentions.members.first()
+  let member;
+  if (!mention) {
+    member = args[1]
+  } else {
+    member = mention.id
+  }
+
+  if (!member) return message.channel.send(xdemb);
+
+
+    let trydiscord = db.get(`linked.users.ID.${member}`)
+    let notlinked = new discord.RichEmbed()
+    .setTitle("Not Found")
+    .setDescription(`I could not find the user you provided!\nThey are either not linked or you provided an invalid ID / username\n**Note:** Minecraft usernames are CASE sensitive. (e.g. __BamBoozledMC__ not __bamboozledmc__)`)
+    .setColor("#eeff00")
+    let checkiflinked;
+    if (!trydiscord) {
+      checkiflinked = db.get(`linked.users.MC.${member}`)
+    } else {
+      checkiflinked = trydiscord
+    }
+    if (!checkiflinked) return message.channel.send(notlinked)
+
+    let userguild = client.guilds.get(config["discord-guild"])
+    let user = userguild.members.get(checkiflinked.discordID)
+
+    let presences = {
+      online: "<:online:898440570840707112> Online",
+      idle: "<:idle:898440645591576586> Idle",
+      dnd: "<:dnd:898440662398144523> Do Not Disturb",
+      offline: "<:offline:898440628076171284> Offline"
+    }
+
+    let userinfo = new discord.RichEmbed()
+    .setTitle("User Found!")
+    .setColor("#00e052")
+    .addField("Discord", `**User:** <@${checkiflinked.discordID}>\n**Tag:** ${user.user.tag}\n**ID:** ${checkiflinked.discordID}`)
+    .addField("Minecraft", `**Player:** ${checkiflinked.minecraft}`)
+    .addField("Other Info", `**Joined Discord at:** ${user.joinedAt}\n**Discord account created at:** ${user.user.createdAt}\n**Discord Presence:** ${presences[user.presence.status]}`)
+    .setTimestamp()
+
+    message.channel.send(userinfo)
+
+}
 if(message.content.toLowerCase().startsWith(prefix + "linked")) {
   // !message.member.hasPermission("MANAGE_GUILD") &&
     if (!message.member.hasPermission("MANAGE_GUILD") && message.author.id != "562382703190867972") return message.reply("This command is currently only available to Administrators.");
