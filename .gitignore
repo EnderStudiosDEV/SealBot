@@ -1,4 +1,6 @@
 node_modules
+logs
 config.json
 package-lock.json
 backup.zip
+json.sqlite
