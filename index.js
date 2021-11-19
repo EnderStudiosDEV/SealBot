@@ -1114,58 +1114,6 @@ client.on("message", (message) => {
 
     if (message.content.startsWith(config["discord-bot-prefix"])) return;
 
-    let userguild = client.guilds.get(config["discord-guild"])
-        let user = userguild.members.get(checkiflinked.discordID)
-
-    const filter = (reaction, user) => {
-    return ['✅', '❌'].includes(reaction.emoji.name) && user.id === message.author.id;
-    };
-
-    areyousuresend.awaitReactions(filter, { max: 1, time: 30000, errors: ['time'] })
-    .then(collected => {
-    const reaction = collected.first();
-
-    if (reaction.emoji.name === '✅') {
-    	let deleted = new discord.RichEmbed()
-    	.setTitle("Successfully Purged!")
-    	.setDescription(`**${checkiflinked.minecraft}**'s Account has succesfully been purged & unlinked from <@${checkiflinked.discordID}>\nThey have been notified and kicked from the guild.\nAll data related has been deleted.`)
-    	.setTimestamp()
-    	.setColor("#d60000")
-
-      let userdeleted = new discord.RichEmbed()
-    	.setTitle("Guild Purge")
-    	.setDescription(`Your Minecraft account **${checkiflinked.minecraft}**, has been purged from the guild by an Administrator.\nYour member role has been removed and you have been kicked from the guild.\nPlease contact an Administrator if you are unsure why this happened.`)
-    	.setTimestamp()
-    	.setColor("#d60000")
-
-    	db.delete(`linked.users.ID.${checkiflinked.discordID}`)
-    	db.delete(`linked.users.MC.${checkiflinked.minecraft}`)
-    	user.removeRole("877188839255453766")
-    	user.removeRole("878124885275201576")
-      user.send(user, userdeleted)
-      mc.chat(`/guild kick ${checkiflinked.minecraft} Purged by an Administrator`)
-    	areyousuresend.edit(deleted)
-    	areyousuresend.clearReactions()
-    } else {
-    	areyousuresend.clearReactions()
-    	let editembed = new discord.RichEmbed()
-    	.setTitle("Canceled")
-    	.setDescription(`The operation was canceled and **${checkiflinked.minecraft}** will not be purged.`)
-    	.setTimestamp()
-    	.setColor("#d60000")
-    	areyousuresend.edit(editembed)
-    }
-    })
-    .catch(collected => {
-    	console.log(collected)
-    	areyousuresend.clearReactions()
-    	let editembed = new discord.RichEmbed()
-    	.setTitle("Automatically Canceled")
-    	.setDescription(`The operation was automatically canceled because you did not react within the 30 second time frame.\n**${checkiflinked.minecraft}** will not be purged.`)
-    	.setTimestamp()
-    	.setColor("#d60000")
-    	areyousuresend.edit(editembed)
-    });
     mc.chat("/gc " + memnick.replace(" ", "") + "» " + message.content)
     }
     if (message.channel.id == config["discord-officer-channel"]) {
