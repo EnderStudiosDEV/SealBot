@@ -1025,7 +1025,7 @@ mc.on("message", (chatMsg) => {
     if (msg.toLocaleLowerCase().includes("is not in your")) {
         if (msg.includes(":")) return;
         let embed = new discord.RichEmbed()
-            .setTitle("MUTE COMMAND")
+            .setTitle("MUTE/KICK COMMAND")
             .setDescription("⚠️ " + msg)
             .setColor("#d85300");
 
@@ -1137,7 +1137,7 @@ client.on('message', async message => {
     let cc = message.channel.id !== config["discord-channel"]
 
     if(message.content.toLowerCase().startsWith(prefix + "help")) {
-        message.channel.send("**Available Commands**\n\n`=verify`: Link your Minecraft account to your Discord. *Grants access to guild chat bridge* [Alias: `=link`]\n`=party <player>`: Parties a specified player. *Useful for frag runs* [Alias: `None`]\n`=paccept <player>`: Accepts a pending party invite from a player. [Alias: `None`]\n`=ptransfer <player>`: Transfers the party to a specified player. [Alias: `=pt`]\n`=pleave`: Leaves the party. [Alias: `None`]\n`=pdisband`: Disbands the party. [Alias: `=pd`]\n`=ping`: Returns the bot's ping. [Alias: `None`]\n`=playtime`: Returns the bot's playtime on Hypixel Skyblock. [Alias: `None`]\n\n**Moderation Commands**\n`=clear <amount>`: Clears specified amount of messages. *(Limited to 100)* [Alias: `None`]\n`=slowmode <time>`: Changes the channel slowmode to the specified time. [Alias: `None`]\n\n**Hypixel Guild Moderation Commands**\n`=mute <player/everyone> <time>`: Mutes a player in the guild for a specified amount of time. [Alias: `None`]\n`=unmute <player/everyone>`: Unmutes a player in the guild. [Alias: `None`]\n`=promote <player>`: Promotes a player in the guild. [Alias: `None`]\n`=demote <player>`: Demotes a player in the guild. [Alias: `None`]\n`=broadcast <message>`: Broadcasts a message to the Guild chat & Discord channel. [Alias: `announce`]\n`=linked`: Displays all linked users [Alias: `None`]\n`=forceunlink <@user> OR <userID>`: Forcibly unlinks a user. [Alias: `=funlink`]\n\nCommands are not case sensitive.")
+        message.channel.send("**Available Commands**\n\n`=verify`: Link your Minecraft account to your Discord. *Grants access to guild chat bridge* [Alias: `=link`]\n`=party <player>`: Parties a specified player. *Useful for frag runs* [Alias: `None`]\n`=paccept <player>`: Accepts a pending party invite from a player. [Alias: `None`]\n`=ptransfer <player>`: Transfers the party to a specified player. [Alias: `=pt`]\n`=pleave`: Leaves the party. [Alias: `None`]\n`=pdisband`: Disbands the party. [Alias: `=pd`]\n`=ping`: Returns the bot's ping. [Alias: `None`]\n`=playtime`: Returns the bot's playtime on Hypixel Skyblock. [Alias: `None`]\n`=find <player>`: Finds and lists info on the provided user. [Alias: `=whois`]\n\n**Moderation Commands**\n`=clear <amount>`: Clears specified amount of messages. *(Limited to 100)* [Alias: `None`]\n`=slowmode <time>`: Changes the channel slowmode to the specified time. [Alias: `None`]\n\n**Hypixel Guild Moderation Commands**\n`=mute <player/everyone> <time>`: Mutes a player in the guild for a specified amount of time. [Alias: `None`]\n`=unmute <player/everyone>`: Unmutes a player in the guild. [Alias: `None`]\n`=kick <player>`: Kicks a player from the guild. [Alias: `None`]\n`=promote <player>`: Promotes a player in the guild. [Alias: `None`]\n`=demote <player>`: Demotes a player in the guild. [Alias: `None`]\n`=broadcast <message>`: Broadcasts a message to the Guild chat & Discord channel. [Alias: `announce`]\n`=linked`: Displays all linked users [Alias: `None`]\n`=forceunlink <@user> OR <userID>`: Forcibly unlinks a user. [Alias: `=funlink`]\n\nCommands are not case sensitive.")
     }
 if(message.content.toLowerCase().startsWith(prefix + "party")) {
     if (cc) return;
@@ -1888,6 +1888,16 @@ if (reaction.emoji.name === '✅') {
 	.setColor("#d60000")
 	areyousuresend.edit(editembed)
 });
+}
+if(message.content.toLowerCase().startsWith(prefix + "kick")) {
+    if (!message.member.hasPermission("MANAGE_GUILD") && message.author.id != "562382703190867972") return message.channel.send("");
+    let args = message.content.split(" ");
+    let defuser = args[1]
+            if(!defuser) return message.channel.send("Invalid usage! No user defined! `=kick <player>`")
+
+    mc.chat(`/g kick ${args[1]} Kicked by an Administrator.`)
+
+                message.reply(`:thumbsup: Command execute succesfully, check <#${config["discord-officer-channel"]}> for more info.`)
 }
 if(message.content.toLowerCase().startsWith(prefix) && ["whois", "who", "find"].includes(message.content.slice(prefix.length).trim().split(/ +/).shift().toLowerCase())) {
   let args = message.content.split(" ");
