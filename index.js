@@ -141,10 +141,10 @@ mc.on("message", (chatMsg) => {
         }
         const rank2 = {
             "[M]": "MEMBER",
-            "[S]": "SPECIAL",
-            "[Staff]": "STAFF",
-            "[ADMIN]": "ADMIN",
-            "[CO]": "CO OWNER",
+            "[E]": "ELITE",
+            "[STAFF]": "STAFF",
+            "[W]": "WARDEN",
+            "[HEAD]": "HEAD STAFF",
             "[GM]": "GUILD MASTER"
         }
 
@@ -317,12 +317,12 @@ mc.on("message", (chatMsg) => {
             rank = splitMsg[4].replace(":","");
         }
         const rank2 = {
-            "[M]": "MEMBER",
-            "[S]": "SPECIAL",
-            "[Staff]": "STAFF",
-            "[ADMIN]": "ADMIN",
-            "[CO]": "CO OWNER",
-            "[GM]": "GUILD MASTER"
+          "[M]": "MEMBER",
+          "[E]": "ELITE",
+          "[STAFF]": "STAFF",
+          "[W]": "WARDEN",
+          "[HEAD]": "HEAD STAFF",
+          "[GM]": "GUILD MASTER"
         }
         let embed = new discord.RichEmbed()
             .setAuthor(sender + " | " + rank2[rank], "https://www.mc-heads.net/avatar/" + sender)
