@@ -13,6 +13,7 @@
     "inquirer": "^8.1.2",
     "minecraft-pinger": "^1.0.5",
     "mineflayer": "^2.9.6",
+    "os-utils": "0.0.14",
     "prismarine-viewer": "^1.19.3",
     "prompt-sync": "^4.2.0",
     "quick.db": "^7.1.3",
