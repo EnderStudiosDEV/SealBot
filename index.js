@@ -3,6 +3,7 @@ const pinger = require('minecraft-pinger');
 const discord = require("discord.js");
 const beautify = require("beautify");
 const fs = require('fs');
+var os 	= require('os-utils');
 const config = JSON.parse(fs.readFileSync('./config.json'));
 const fetch = require('cross-fetch');
 const db = require('quick.db')
@@ -2008,6 +2009,30 @@ if(message.content.toLowerCase().startsWith(prefix + "linked")) {
 		//message.channel.send(listlinked)
   //}
 }
+// if(message.content.toLowerCase().startsWith(prefix) && ["stats", "statistics"].includes(message.content.slice(prefix.length).trim().split(/ +/).shift().toLowerCase())) {
+//   let v;
+//   os.cpuUsage(v)
+//   setTimeout(() => {
+//     function getcpustat(v){
+//       let i = v * 100
+//       var cpustat = Math.round(i)
+//     };
+//     console.log(getcpustat(cpustat));
+//   }, 1500);
+//
+//   let usedmem = os.totalmem() - os.freemem()
+//
+//   let statistics = new discord.RichEmbed()
+//   .setTitle("Server Statistics")
+//   .setColor("#4284f5")
+//   .addField("<:CPU:927429872454877184> CPU", `Info: Intel(R) Core(TM) i5-2400 CPU @ 3.10GHz\nCores: ${os.cpuCount()}\nCurrent Load/Usage: %`)
+//   .addField("<:RAM:927430796741066752> RAM/MEMORY", `Info: 32GB DDR3 @ 1333MHz\nCurrent Used Memory: ${usedmem}\nCurrent Free Memory: ${os.freemem()}`)
+//   .addField("<:DELL:927433564176392252> SYSTEM", `Info: ${os.platform()}`)
+//
+//   message.channel.send(statistics)
+//
+// }
+
 
 });
 
