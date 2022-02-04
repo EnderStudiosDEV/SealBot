@@ -593,6 +593,27 @@ mc.on("message", (chatMsg) => {
 				user.removeRole("878124885275201576")
 				user.send(`<@${removeroleID.discordID}>`, autounlink)
     }
+    if(msg.includes(`${sender} [E]: `)) {
+        // Automatically give ELITE role in Discord
+        let addroleID = db.get(`linked.users.MC.${sender}`)
+
+        let userguild = client.guilds.get(config["discord-guild"])
+		let user = userguild.members.get(removeroleID.discordID)
+        if(!user.hasRole("917903499671507014")) {
+            user.addRole("917903499671507014");
+        }
+    }
+    if(msg.includes(`${sender} [W]: `)) {
+        
+        // Automatially give WARDEN role in Discord
+        let addroleID = db.get(`linked.users.MC.${sender}`)
+
+        let userguild = client.guilds.get(config["discord-guild"])
+		let user = userguild.members.get(removeroleID.discordID)
+        if(!user.hasRole("917898479563579432")) {
+            user.addRole("917898479563579432")
+        }
+    }
 
     /* if (msg.includes("the party")) {
         let v = msg.split(" ", 4);
@@ -1140,6 +1161,9 @@ client.on('message', async message => {
     if(message.content.toLowerCase().startsWith(prefix + "help")) {
         message.channel.send("**Available Commands**\n\n`=verify`: Link your Minecraft account to your Discord. *Grants access to guild chat bridge* [Alias: `=link`]\n`=party <player>`: Parties a specified player. *Useful for frag runs* [Alias: `None`]\n`=paccept <player>`: Accepts a pending party invite from a player. [Alias: `None`]\n`=ptransfer <player>`: Transfers the party to a specified player. [Alias: `=pt`]\n`=pleave`: Leaves the party. [Alias: `None`]\n`=pdisband`: Disbands the party. [Alias: `=pd`]\n`=ping`: Returns the bot's ping. [Alias: `None`]\n`=playtime`: Returns the bot's playtime on Hypixel Skyblock. [Alias: `None`]\n`=find <player>`: Finds and lists info on the provided user. [Alias: `=whois`]\n\n**Moderation Commands**\n`=clear <amount>`: Clears specified amount of messages. *(Limited to 100)* [Alias: `None`]\n`=slowmode <time>`: Changes the channel slowmode to the specified time. [Alias: `None`]\n\n**Hypixel Guild Moderation Commands**\n`=mute <player/everyone> <time>`: Mutes a player in the guild for a specified amount of time. [Alias: `None`]\n`=unmute <player/everyone>`: Unmutes a player in the guild. [Alias: `None`]\n`=kick <player>`: Kicks a player from the guild. [Alias: `None`]\n`=promote <player>`: Promotes a player in the guild. [Alias: `None`]\n`=demote <player>`: Demotes a player in the guild. [Alias: `None`]\n`=broadcast <message>`: Broadcasts a message to the Guild chat & Discord channel. [Alias: `announce`]\n`=linked`: Displays all linked users [Alias: `None`]\n`=forceunlink <@user> OR <userID>`: Forcibly unlinks a user. [Alias: `=funlink`]\n\nCommands are not case sensitive.")
     }
+if(message.content.contains("\n")) {
+    return;
+}
 if(message.content.toLowerCase().startsWith(prefix + "party")) {
     if (cc) return;
     let args = message.content.split(" ", 4);
