@@ -208,6 +208,7 @@ mc.on("message", (chatMsg) => {
             console.log(lurkmsgs[i2])
             mc.chat("/gc " + lurkmsgs[i2])
             db.set("msg.lurkincrement", i2 +1);
+            db.set("msg.lurklist", db.get("msg.lurklist") + ". ${sender}")
         }
         if (sentMsgNoSpaces.toLowerCase().startsWith("!unlurk")) {
             let unlurkmsgs = [
@@ -222,6 +223,7 @@ mc.on("message", (chatMsg) => {
             console.log(unlurkmsgs[i3])
             mc.chat("/gc " + unlurkmsgs[i3])
             db.set("msg.unlurkincrement", i3 +1);
+            db.set("msg.lurklist", db.get("msg.lurklist").replace(", ${sender}", ""))
         }
         if (sentMsgNoSpaces.toLowerCase().startsWith("!playtime")) {
             mc.chat("/playtime")
@@ -1477,6 +1479,15 @@ if(message.content.toLowerCase().startsWith(prefix + "fake")) {
             }, 500);
         }, 500);
 } */
+if(message.content.toLowerCase().startsWith(prefix + "lurklist")) {
+    let embed = new discord.RichEmbed()
+    .setColor("RED")
+    .setTitle("Players Lurking")
+    .setDescription(db.get("msg.lurklist"))
+    .setFooter(client.user.username)
+    message.channel.send(embed)
+    
+}
 if(message.content.toLowerCase().startsWith(prefix + "mute")) {
     if (!message.member.hasPermission("MANAGE_GUILD") && (!message.author.hasRole("861410060034506762"))) return message.channel.send("No.");
     let args = message.content.split(" ");
