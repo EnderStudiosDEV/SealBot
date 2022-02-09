@@ -4,7 +4,6 @@ const discord = require("discord.js");
 const beautify = require("beautify");
 const fs = require('fs');
 var os 	= require('os-utils');
-const config = JSON.parse(fs.readFileSync('./config.json'));
 const fetch = require('cross-fetch');
 const db = require('quick.db')
 const readline = require('readline').createInterface({
@@ -12,10 +11,50 @@ const readline = require('readline').createInterface({
   output: process.stdout
 });
 
+const default_config_tempalte = `
+{
+    "minecraft-username": "MC_EMAIL",
+    "minecraft-password": "MC_PASS",
+    "mcserver": "mc.hypixel.net",
+
+    "discord-token": "BOT_TOKEN",
+    "discord-guild": "DISCORD_GUILD",
+    "discord-channel": "DISCORD_CHANNEL",
+    "discord-officer-channel": "DISCORD_OFFICER_CHANNEL",
+    "discord-console-channel": "DISCORD_CONSOLE_CHANNEL",
+    "discord-bot-prefix": "=",
+
+
+    "acceptid1": "",
+    "acceptign1": "",
+
+    "acceptid2": "",
+    "acceptign2": "",
+
+    "acceptid3": "",
+    "acceptign3": "",
+
+    "acceptid4": "",
+    "acceptign4": ""
+  }
+`;
+
+// Create a config file on first startup
+if (!fs.existsSync("config.json")) {
+    fs.writeFileSync("config.json", default_config_tempalte, encoding="utf-8");
+}
+
+const config = JSON.parse(fs.readFileSync('./config.json'));
+
+// Create a logs directory on first startup
+if (!fs.existsSync("logs")) {
+    fs.mkdirSync("logs");
+}
+
 // create a rolling file logger based on date/time that fires process events
 const opts = {
 	errorEventName:'error',
-        logDirectory:'/Users/lwage/Desktop/Boreas Discord Bot/SealBot/logs', // NOTE: folder must exist and be writable...
+        logDirectory:'./logs',
         fileNamePattern:'<DATE>.log',
         dateFormat:'YYYY.MM.DD'
 };
@@ -34,7 +73,7 @@ const options = {
 
 
 
-// minecraft bot stuff vv
+// minecraft bot stuff
 let mc;
 (function init() {
     console.log("Logging in.");
@@ -73,7 +112,8 @@ mc.on("login", () => {
 
 mc.on('kicked', console.log)
 mc.on('error', console.log)
-const { mineflayer: mineflayerViewer } = require('prismarine-viewer')
+const { mineflayer: mineflayerViewer } = require('prismarine-viewer');
+const { exit } = require("process");
 mc.once('spawn', () => {
   mineflayerViewer(mc, { port: 8880, firstPerson: true }) // port is the minecraft server port, if first person is false, you get a bird's-eye view
 })
@@ -160,6 +200,29 @@ mc.on("message", (chatMsg) => {
 
         //channel.send(embed);
         client.guilds.get(config["discord-guild"]).channels.get(config["discord-channel"]).send(embed);
+    
+        if(rank == "[E]") {
+            console.log(sender)
+            // Automatically give ELITE role in Discord
+            let addroleID = db.get(`linked.users.MC.${sender}`)
+            if(!addroleID) return;
+            let userguild = client.guilds.get(config["discord-guild"])
+            let user = userguild.members.get(addroleID.discordID)
+            if(!user.roles.some(role => role.id === '917898479563579432')) {
+                user.addRole("917903499671507014");
+            }
+        }
+        if(rank == "[W]") {
+            // Automatially give WARDEN role in Discord
+            let addroleID = db.get(`linked.users.MC.${sender}`)
+            if(!addroleID) return;
+            let userguild = client.guilds.get(config["discord-guild"])
+            let user = userguild.members.get(addroleID.discordID)
+            if(!user.roles.some(role => role.id === '917898479563579432')) {
+                user.addRole("917898479563579432")
+            }
+        }
+
     }
 
     if (msg.startsWith("Guild >") && msg.includes(":")) {
@@ -208,11 +271,7 @@ mc.on("message", (chatMsg) => {
             console.log(lurkmsgs[i2])
             mc.chat("/gc " + lurkmsgs[i2])
             db.set("msg.lurkincrement", i2 +1);
-            
             db.set("msg.lurklist", db.get("msg.lurklist") + `, ${sender}`)
-            if(db.get("msg.lurklist").startsWith("undefined, ")) {
-                db.set("msg.lurklist", db.get("msg.lurklist").replace("undefined, ", ""))
-            }
         }
         if (sentMsgNoSpaces.toLowerCase().startsWith("!unlurk")) {
             let unlurkmsgs = [
@@ -227,10 +286,15 @@ mc.on("message", (chatMsg) => {
             console.log(unlurkmsgs[i3])
             mc.chat("/gc " + unlurkmsgs[i3])
             db.set("msg.unlurkincrement", i3 +1);
-            db.set("msg.lurklist", db.get("msg.lurklist").replace(", ${sender}", ""))
-            if(db.get("msg.lurklist").startsWith("undefined, ")) {
-                db.set("msg.lurklist", db.get("msg.lurklist").replace("undefined, ", ""))
-            }
+            db.set("msg.lurklist", db.get("msg.lurklist").replace(`, ${sender}`, ""))
+        }
+        // if (sentMsgNoSpaces.toLowerCase().startsWith("!playtime")) {
+        //     mc.chat("/playtime")
+        // }
+        if (sentMsgNoSpaces.toLowerCase().startsWith("!ll")) {
+            db.get("msg.lurklist")
+            mc.chat("/gc People Lurking: " + db.get("msg.lurklist"))
+
         }
         if (sentMsgNoSpaces.toLowerCase().startsWith("!playtime")) {
             mc.chat("/playtime")
@@ -498,6 +562,7 @@ mc.on("message", (chatMsg) => {
 
         //channel.send(embed);
         client.guilds.get(config["discord-guild"]).channels.get(config["discord-channel"]).send(embed);
+        config.set("msg.lurklist", config.get("msg.lurklist").replace(`, ${sender}`, ""))
     }
 
     if (msg.includes("joined the g")) {
@@ -601,27 +666,6 @@ mc.on("message", (chatMsg) => {
 				user.removeRole("877188839255453766")
 				user.removeRole("878124885275201576")
 				user.send(`<@${removeroleID.discordID}>`, autounlink)
-    }
-    if(msg.includes(`${sender} [E]: `)) {
-        // Automatically give ELITE role in Discord
-        let addroleID = db.get(`linked.users.MC.${sender}`)
-
-        let userguild = client.guilds.get(config["discord-guild"])
-		let user = userguild.members.get(removeroleID.discordID)
-        if(!user.roles.has("917903499671507014")) {
-            user.roles.addRole("917903499671507014");
-        }
-    }
-    if(msg.includes(`${sender} [W]: `)) {
-        
-        // Automatially give WARDEN role in Discord
-        let addroleID = db.get(`linked.users.MC.${sender}`)
-
-        let userguild = client.guilds.get(config["discord-guild"])
-		let user = userguild.members.get(removeroleID.discordID)
-        if(!user.roles.has("917898479563579432")) {
-            user.roles.addRole("917898479563579432")
-        }
     }
 
     /* if (msg.includes("the party")) {
@@ -1136,6 +1180,9 @@ client.on("message", (message) => {
     if (message.author.bot) return;
 
     if (message.channel.id == config["discord-channel"]) {
+      if(message.content.includes("\n")) {
+          return;
+      }
     let member = message.guild.members.get(message.author.id)
     let memnick = member.nickname ? member.nickname : message.author.username
     let channelname = message.channel.name
@@ -1148,6 +1195,9 @@ client.on("message", (message) => {
     mc.chat("/gc " + memnick.replace(" ", "") + "» " + message.content)
     }
     if (message.channel.id == config["discord-officer-channel"]) {
+      if(message.content.includes("\n")) {
+          return;
+      }
         let member = message.guild.members.get(message.author.id)
     let memnick = member.nickname ? member.nickname : message.author.username
     let channelname = message.channel.name
@@ -1170,7 +1220,6 @@ client.on('message', async message => {
     if(message.content.toLowerCase().startsWith(prefix + "help")) {
         message.channel.send("**Available Commands**\n\n`=verify`: Link your Minecraft account to your Discord. *Grants access to guild chat bridge* [Alias: `=link`]\n`=party <player>`: Parties a specified player. *Useful for frag runs* [Alias: `None`]\n`=paccept <player>`: Accepts a pending party invite from a player. [Alias: `None`]\n`=ptransfer <player>`: Transfers the party to a specified player. [Alias: `=pt`]\n`=pleave`: Leaves the party. [Alias: `None`]\n`=pdisband`: Disbands the party. [Alias: `=pd`]\n`=ping`: Returns the bot's ping. [Alias: `None`]\n`=playtime`: Returns the bot's playtime on Hypixel Skyblock. [Alias: `None`]\n`=find <player>`: Finds and lists info on the provided user. [Alias: `=whois`]\n\n**Moderation Commands**\n`=clear <amount>`: Clears specified amount of messages. *(Limited to 100)* [Alias: `None`]\n`=slowmode <time>`: Changes the channel slowmode to the specified time. [Alias: `None`]\n\n**Hypixel Guild Moderation Commands**\n`=mute <player/everyone> <time>`: Mutes a player in the guild for a specified amount of time. [Alias: `None`]\n`=unmute <player/everyone>`: Unmutes a player in the guild. [Alias: `None`]\n`=kick <player>`: Kicks a player from the guild. [Alias: `None`]\n`=promote <player>`: Promotes a player in the guild. [Alias: `None`]\n`=demote <player>`: Demotes a player in the guild. [Alias: `None`]\n`=broadcast <message>`: Broadcasts a message to the Guild chat & Discord channel. [Alias: `announce`]\n`=linked`: Displays all linked users [Alias: `None`]\n`=forceunlink <@user> OR <userID>`: Forcibly unlinks a user. [Alias: `=funlink`]\n\nCommands are not case sensitive.")
     }
-
 if(message.content.toLowerCase().startsWith(prefix + "party")) {
     if (cc) return;
     let args = message.content.split(" ", 4);
@@ -1186,7 +1235,7 @@ if(message.content.toLowerCase().startsWith(prefix + "pleave")) {
     mc.chat("/p leave")
 }
 if(message.content.toLowerCase().startsWith(prefix + "pc")) {
-    if (!message.author.roles.has("861410060034506762")) return;
+    if (!message.member.roles.some(role => role.id === '861410060034506762')) return;
     let args = message.content.split(" ");
     let messagesent = args.slice(1).join(" ")
     mc.chat("/pc " + messagesent)
@@ -1260,49 +1309,49 @@ if(message.content.toLowerCase().startsWith(prefix + "info")) {
 
 }
 if(message.content.toLowerCase().startsWith(prefix + "fadd")) {
-    if (!message.author.roles.has("861410060034506762")) return;
+    if (!message.member.roles.some(role => role.id === '861410060034506762')) return;
     let args = message.content.split(" ", 4);
     mc.chat("/friend " + args[1])
 }
 if(message.content.toLowerCase().startsWith(prefix + "friend")) {
-    if (!message.author.roles.has("861410060034506762")) return;
+    if (!message.member.roles.some(role => role.id === '861410060034506762')) return;
     let args = message.content.split(" ", 4);
     mc.chat("/friend " + args[1])
 }
 if(message.content.toLowerCase().startsWith(prefix + "fdeny")) {
-    if (!message.author.roles.has("861410060034506762")) return;
+    if (!message.member.roles.some(role => role.id === '861410060034506762')) return;
     let args = message.content.split(" ", 4);
     mc.chat("/friend deny " + args[1])
 }
 if(message.content.toLowerCase().startsWith(prefix + "faccept")) {
-    if (!message.author.roles.has("861410060034506762")) return;
+    if (!message.member.roles.some(role => role.id === '861410060034506762')) return;
     let args = message.content.split(" ", 4);
     mc.chat("/friend accept " + args[1])
 }
 if(message.content.toLowerCase().startsWith(prefix + "ignoreadd")) {
-    if (!message.author.roles.has("861410060034506762")) return;
+    if (!message.member.roles.some(role => role.id === '861410060034506762')) return;
     let args = message.content.split(" ", 4);
     mc.chat("/ignore add " + args[1])
 }
 if(message.content.toLowerCase().startsWith(prefix + "ignoreremove")) {
-    if (!message.author.roles.has("861410060034506762")) return;
+    if (!message.member.roles.some(role => role.id === '861410060034506762')) return;
     let args = message.content.split(" ", 4);
     mc.chat("/ignore remove " + args[1])
 }
 if(message.content.toLowerCase().startsWith(prefix + "say")) {
-    if (!message.author.roles.has("861410060034506762")) return;
+    if (!message.member.roles.some(role => role.id === '861410060034506762')) return;
     let args = message.content.split(" ");
     let messagesent = args.slice(1).join(" ")
     mc.chat("/gc " + messagesent)
 }
 if(message.content.toLowerCase().startsWith(prefix + "execute")) {
-    if (!message.author.roles.has("861410060034506762")) return message.channel.send("This command can only be used by Staff Members to prevent abuse");
+    if (!message.member.roles.some(role => role.id === '861410060034506762')) return message.channel.send("This command can only be used by Staff Members to prevent abuse");
     let args = message.content.split(" ");
     let messagesent = args.slice(1).join(" ")
     mc.chat("/" + messagesent)
 }
 if(message.content.toLowerCase().startsWith(prefix + "slowmode")) {
-    if (!message.member.hasPermission("MANAGE_CHANNELS") && !message.author.roles.has("861410060034506762")) return message.channel.send("Sorry, you don't have permissions to use this!");
+    if (!message.member.hasPermission("MANAGE_CHANNELS") && !message.member.roles.some(role => role.id === '861410060034506762')) return message.channel.send("Sorry, you don't have permissions to use this!");
     let args = message.content.split(" ");
     let time = args[1]
             if(!time) return message.channel.send("Make sure you include a time!")
@@ -1316,7 +1365,7 @@ if(message.content.toLowerCase().startsWith(prefix + "slowmode")) {
                 message.channel.send(`:white_check_mark: I successfully set the channel slowmode to \`${args[1]}\``)
 }
 if(message.content.toLowerCase().startsWith(prefix + "clear")) {
-    if (!message.member.hasPermission("MANAGE_MESSAGES") && !message.author.roles.has("861410060034506762")) return message.channel.send("Sorry, you don't have permissions to use this!");
+    if (!message.member.hasPermission("MANAGE_MESSAGES") && !message.member.roles.some(role => role.id === '861410060034506762')) return message.channel.send("Sorry, you don't have permissions to use this!");
     let args = message.content.split(" ");
     if(!args[1] || isNaN(args[1]) || args[1] > 100) return message.channel.send("Invalid Number. Please make sure it is smaller then 100 and not a letter.");
 		  message.delete()
@@ -1327,7 +1376,7 @@ if(message.content.toLowerCase().startsWith(prefix + "clear")) {
 }
 if(message.content.toLowerCase().startsWith(prefix + "pspam")) {
     if (cc) return;
-    if (!message.author.roles.has("861410060034506762")) return;
+    if (!message.member.roles.some(role => role.id === '861410060034506762')) return;
     let args = message.content.split(" ");
     let messagesent = args.slice(1).join(" ")
     setTimeout(function() {
@@ -1350,7 +1399,7 @@ if(message.content.toLowerCase().startsWith(prefix + "pspam")) {
     }, 500);
 }
 if(message.content.toLowerCase().startsWith(prefix + "dm")) {
-    if (!message.author.roles.has("861410060034506762")) return;
+    if (!message.member.roles.some(role => role.id === '861410060034506762')) return;
     let user = message.mentions.users.first();
     let args = message.content.split(" ");
     message.delete()
@@ -1367,7 +1416,7 @@ if(message.content.toLowerCase().startsWith(prefix + "dm")) {
 		}
 }
 if(message.content.toLowerCase().startsWith(prefix + "send")) {
-    if (!message.member.hasPermission("MANAGE_MESSAGES") && (!message.author.roles.has("861410060034506762"))) return;
+    if (!message.member.hasPermission("MANAGE_MESSAGES") && (!message.member.roles.some(role => role.id === '861410060034506762'))) return;
     let args = message.content.split(" ");
     if (message.author.bot) return;
 		let msgtosend = args.slice(1).join(" ")
@@ -1380,7 +1429,7 @@ if(message.content.toLowerCase().startsWith(prefix + "send")) {
 		})
 }
 if(message.content.toLowerCase().startsWith(prefix + "announce")) {
-    if (!message.member.hasPermission("MANAGE_MESSAGES") && (!message.author.hasRole("861410060034506762"))) return;
+    if (!message.member.hasPermission("MANAGE_MESSAGES") && (!message.member.roles.some(role => role.id === '861410060034506762'))) return;
     let args = message.content.split(" ");
     if (message.author.bot) return;
 		let msgtosend = args.slice(1).join(" ")
@@ -1396,7 +1445,7 @@ if(message.content.toLowerCase().startsWith(prefix + "announce")) {
 		})
 }
 if(message.content.toLowerCase().startsWith(prefix + "broadcast")) {
-    if (!message.member.hasPermission("MANAGE_MESSAGES") && (!message.author.hasRole("861410060034506762"))) return;
+    if (!message.member.hasPermission("MANAGE_MESSAGES") && (!message.member.roles.some(role => role.id === '861410060034506762'))) return;
     let args = message.content.split(" ");
     if (message.author.bot) return;
 		let msgtosend = args.slice(1).join(" ")
@@ -1417,7 +1466,7 @@ if(message.content.toLowerCase().startsWith(prefix + "playtime")) {
     mc.chat("/playtime")
 }
 if(message.content.toLowerCase().startsWith(prefix + "fake")) {
-    if (!message.author.hasRole("861410060034506762")) return;
+    if (!message.member.roles.some(role => role.id === '861410060034506762')) return;
     let args = message.content.split(" ");
     let starthyprank = args[1].toLowerCase()
     let sender = args[2]
@@ -1485,20 +1534,16 @@ if(message.content.toLowerCase().startsWith(prefix + "fake")) {
         }, 500);
 } */
 if(message.content.toLowerCase().startsWith(prefix + "lurklist")) {
-    var getLurkList = db.get("msg.lurklist")
-    if(getLurkList == "undefined") {
-        getLurkList = "Nobody is lurking right now!"
-    }
     let embed = new discord.RichEmbed()
     .setColor("RED")
     .setTitle("Players Lurking")
     .setDescription(db.get("msg.lurklist"))
     .setFooter(client.user.username)
     message.channel.send(embed)
-    
+
 }
 if(message.content.toLowerCase().startsWith(prefix + "mute")) {
-    if (!message.member.hasPermission("MANAGE_GUILD") && (!message.author.hasRole("861410060034506762"))) return message.channel.send("No.");
+    if (!message.member.hasPermission("MANAGE_GUILD") && (!message.member.roles.some(role => role.id === '861410060034506762'))) return message.channel.send("No.");
     let args = message.content.split(" ");
     let defuser = args[1]
             if(!defuser) return message.channel.send("Invalid usage! No user defined! `=mute <player/everyone> <time>`")
@@ -1510,7 +1555,7 @@ if(message.content.toLowerCase().startsWith(prefix + "mute")) {
                 message.reply(`:thumbsup: Command execute succesfully, check <#${config["discord-officer-channel"]}> for more info.`)
 }
 if(message.content.toLowerCase().startsWith(prefix + "unmute")) {
-    if (!message.member.hasPermission("MANAGE_GUILD") && (!message.author.hasRole("861410060034506762"))) return message.channel.send("No.");
+    if (!message.member.hasPermission("MANAGE_GUILD") && (!message.member.roles.some(role => role.id === '861410060034506762'))) return message.channel.send("No.");
     let args = message.content.split(" ");
     let defuser = args[1]
             if(!defuser) return message.channel.send("Invalid usage! No user defined! `=unmute <player/everyone>`")
@@ -1553,7 +1598,7 @@ if (message.content.toLowerCase().startsWith(prefix + "inviteme")) {
     } else message.reply("You do not have permission to use this.")
 }
 if (message.content.toLowerCase().startsWith(prefix + "reload")) {
-    if (!message.author.hasRole("861410060034506762")) return;
+    if (!message.member.roles.some(role => role.id === '861410060034506762')) return;
        client.destroy()
        client.login(config["discord-token"]);
      message.channel.send("Reloaded");
@@ -1563,7 +1608,7 @@ if (message.content.toLowerCase().startsWith(prefix + "eval")) {
 
     let args = message.content.slice(6).split(" ");
 
-    if (!message.author.roles.has("861410060034506762")) return message.channel.send("This command can only be used by Staff to prevent abuse");
+    if(!message.member.roles.some(role => role.id === '861410060034506762')) return message.channel.send("This command can only be used by Staff to prevent abuse");
     if (!args[0]) return message.channel.send("You didn't give me anything to evaluate! :sob:")
     try {
         if (args.join(" ").toLowerCase().includes("token")) return;
@@ -1635,7 +1680,7 @@ Errorembed.awaitReactions(filter, { max: 1, time: 15000, errors: ['time'] })
     }
 }
 if(message.content.toLowerCase().startsWith(prefix + "promote")) {
-    if (!message.member.hasPermission("MANAGE_GUILD") && (!message.author.roles.has("861410060034506762"))) return message.reply("This command is only available to Administrators.");
+    if (!message.member.hasPermission("MANAGE_GUILD") && (!message.member.roles.some(role => role.id === '861410060034506762'))) return message.reply("This command is only available to Administrators.");
     let args = message.content.split(" ");
     let defuser = args[1]
             if(!defuser) return message.channel.send("Invalid usage! No user defined! `=promote <player>`");
@@ -1645,7 +1690,7 @@ if(message.content.toLowerCase().startsWith(prefix + "promote")) {
                 message.reply(`:thumbsup: Command execute succesfully, check <#${config["discord-officer-channel"]}> for more info.`)
 }
 if(message.content.toLowerCase().startsWith(prefix + "demote")) {
-    if (!message.member.hasPermission("MANAGE_GUILD") && (!message.author.roles.has("861410060034506762"))) return message.reply("This command is only available to Administrators.");
+    if (!message.member.hasPermission("MANAGE_GUILD") && (!message.member.roles.some(role => role.id === '861410060034506762'))) return message.reply("This command is only available to Administrators.");
     let args = message.content.split(" ");
     let defuser = args[1]
             if(!defuser) return message.channel.send("Invalid usage! No user defined! `=demote <player>`");
@@ -1850,7 +1895,7 @@ if (reaction.emoji.name === '✅') {
 });
 }
 if(message.content.toLowerCase().startsWith(prefix) && ["purge", "remove"].includes(message.content.slice(prefix.length).trim().split(/ +/).shift().toLowerCase())) {
-  if (!message.member.hasPermission("MANAGE_GUILD") && (!message.author.roles.has("861410060034506762"))) return message.reply("This command is currently only available to Administrators.");
+  if (!message.member.hasPermission("MANAGE_GUILD") && (!message.member.roles.some(role => role.id === '861410060034506762'))) return message.reply("This command is currently only available to Administrators.");
 let args = message.content.split(" ");
 console.log(args[1]);
 
@@ -1941,7 +1986,7 @@ if (reaction.emoji.name === '✅') {
 });
 }
 if(message.content.toLowerCase().startsWith(prefix + "kick")) {
-    if (!message.member.hasPermission("MANAGE_GUILD") && (!message.author.roles.has("861410060034506762"))) return message.channel.send("");
+    if (!message.member.hasPermission("MANAGE_GUILD") && (!message.member.roles.some(role => role.id === '861410060034506762'))) return message.channel.send("");
     let args = message.content.split(" ");
     let defuser = args[1]
             if(!defuser) return message.channel.send("Invalid usage! No user defined! `=kick <player>`")
@@ -2002,7 +2047,7 @@ if(message.content.toLowerCase().startsWith(prefix) && ["whois", "who", "find"].
 }
 if(message.content.toLowerCase().startsWith(prefix + "linked")) {
   // !message.member.hasPermission("MANAGE_GUILD") &&
-    if (!message.member.hasPermission("MANAGE_GUILD") && (!message.author.roles.has("861410060034506762"))) return message.reply("This command is currently only available to Administrators.");
+    if (!message.member.hasPermission("MANAGE_GUILD") && (!message.member.roles.some(role => role.id === '861410060034506762'))) return message.reply("This command is currently only available to Administrators.");
 		let linkedusers = db.get(`linked.users.ID`)
 		var listofusers = []
     var numofusers = 0
